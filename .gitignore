@@ -1,0 +1,38 @@
+# Build and release artifacts
+Ausgabe/
+release/
+tmp*/
+*.exe
+*.dll
+*.zip
+*.rar
+*.7z
+*.obj
+*.pdb
+*.log
+*.pyc
+__pycache__/
+
+# Local/private runtime state
+QTranslate.6.9.0/Data/
+*/Data/History.json
+*/Data/DictionaryHistory.json
+*/Data/qt_url_trace.log
+*/Data/Options.before_*.json
+
+# Original binary/documentation assets are not source-controlled here.
+*.ico
+*.pdf
+*.rtf
+
+# Keep only the service JavaScript sources from the unpacked QTranslate tree.
+QTranslate.6.9.0/*
+!QTranslate.6.9.0/Services/
+QTranslate.6.9.0/Services/*
+!QTranslate.6.9.0/Services/Common.js
+!QTranslate.6.9.0/Services/Multi/
+QTranslate.6.9.0/Services/Multi/*
+!QTranslate.6.9.0/Services/Multi/Service.js
+
+# Keep source scripts and notes, but ignore generated caches.
+scripts/__pycache__/
