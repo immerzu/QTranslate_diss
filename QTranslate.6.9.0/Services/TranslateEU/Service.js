@@ -1,0 +1,10 @@
+var _qtRD=ResponseData;function _qtErrPrefix(a){a=a||"";return /^\s*\[E\]/.test(a)?a:"[E] "+(a||"Keine Daten zurueckgegeben.")}ResponseData=function(a,b,c,d,e){if(!e){var f=a||"";if(!f||(!/^\s*\[E\]/.test(f)&&/^(?:\s*(?:DeepL|YandexInL|Yandex|Google|Microsoft|FreeTranslations|WebTran|TranslateEU|TranslatorEU|Lingvanex|LaraTranslate|Wikipedia|Multi)\s*:\s*)?(?:keine |Keine |Fehler|Error|Skript-Fehler|Zeit|unsupported|failed|timeout|unavailable|no usable|no data|empty)/i.test(f)))a=_qtErrPrefix(f)}_qtRD.call(this,a,b,c,d,e)};
+function serviceHeader(){return new ServiceHeader(114,"TranslateEU","translate.eu web translator powered by LibreTranslate."+Const.NL2+serviceLink(),Capability.TRANSLATE)}
+function serviceHost(a,b,c){return"https://www.translate.eu"}
+function serviceLink(a,b,c){return serviceHost()+"/"}
+function _txCode(a){if(a===AUTO_DETECT_LANGUAGE)return"";a=codeFromLanguage(a);return"zh-CN"===a?"zh":"zh-TW"===a?"zt":a}
+function _txChr(a){return 65535>=a?String.fromCharCode(a):String.fromCharCode(55296+((a-65536)>>10),56320+((a-65536)&1023))}
+function _txText(a){return stripHtml(unquoteHtml((a||"").replace(/&#x([0-9a-f]+);|&#([0-9]+);/ig,function(a,b,c){a=parseInt(b||c,b?16:10);return isNaN(a)?"":_txChr(a)})))}
+function serviceTranslateRequest(a,b,c){return new RequestData(HttpMethod.POST,"/libre/","txt="+encodePostParam(limitSource(prepareLinkedSource(a),2900))+"&from="+encodePostParam(_txCode(b))+"&to="+encodePostParam(_txCode(c||ENGLISH_LANGUAGE)),postHeader()+Const.NL+"Accept: message/x-jl-formresult"+Const.NL+"Origin: "+serviceHost()+Const.NL+"Referer: "+serviceLink())}
+function serviceTranslateResponse(a,b,c,d){b=parseJSON(b);return b&&b.tr?new ResponseData(_txText(b.tr),isLanguage(c)?c:UNKNOWN_LANGUAGE,d):new ResponseData("",c,d)}
+SupportedLanguages=[-1,"",-1,"az","sq","ar",-1,"eu",-1,"bg","ca","zh","zt",-1,"cs","da","nl","en","et","fi","tl","fr","gl","de","el",-1,"he","hi","hu",-1,"id","it","ga","ja",-1,"ko","lv","lt",-1,"ms",-1,"nb","fa","pl","pt","ro","ru",-1,"sk","sl","es",-1,"sv","th","tr","uk","ur",-1,-1,-1,"eo",-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,"bn",-1];

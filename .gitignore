@@ -25,14 +25,11 @@ QTranslate.6.9.0/Data/
 *.pdf
 *.rtf
 
-# Keep only the service JavaScript sources from the unpacked QTranslate tree.
+# Keep the full unpacked Services tree from the QTranslate source, but not packed archives.
 QTranslate.6.9.0/*
 !QTranslate.6.9.0/Services/
-QTranslate.6.9.0/Services/*
-!QTranslate.6.9.0/Services/Common.js
-!QTranslate.6.9.0/Services/Multi/
-QTranslate.6.9.0/Services/Multi/*
-!QTranslate.6.9.0/Services/Multi/Service.js
+!QTranslate.6.9.0/Services/**
+QTranslate.6.9.0/Services/*.rar
 
 # Keep source scripts and notes, but ignore generated caches.
 scripts/__pycache__/
