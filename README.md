@@ -1,32 +1,50 @@
-# QTranslate 6.9.0 patch workspace
+# QTranslate 6.9.0 Patch Workspace
 
-This repository contains the source-level patch work for a modified QTranslate 6.9.0 portable build.
+Source-level patch workspace for a hardened QTranslate 6.9.0 portable build.
 
-The repository intentionally tracks patch sources and service JavaScript only. Prebuilt executables, portable archives, service `.rar` files, temporary traces, and local runtime data are excluded from Git and should be published as GitHub Release assets when needed.
+This repository focuses on the parts that were actually changed: ASM hooks, patch/build scripts, native helper code, notes, and the unpacked service sources used by the runtime. Generated binaries, portable archives, packed service `.rar` files, traces, and local runtime state stay out of Git and belong in GitHub Releases instead.
 
-## Current focus
+## What this repo improves
 
-- Preserve browser and clipboard links through QTranslate capture paths.
-- Render translated output links with visible anchors and hidden URL backing text.
-- Keep popup link clicks, selection, copy, and cursor behavior stable.
-- Protect URLs, file names, versions, and technical paths from service/post-processing punctuation splitting.
-- Keep service text transformations lossless and format-oriented only.
+- Preserves browser and clipboard links through QTranslate capture paths.
+- Renders translated popup links as readable anchors with hidden backing URLs.
+- Keeps popup click, hover cursor, selection, and copy behavior stable.
+- Protects URLs, file names, version strings, and technical paths from punctuation splitting in the active service path.
+- Keeps service-side text handling lossless and format-oriented instead of semantically rewriting content.
 
-## Important files
+## Repository layout
 
-- `asm/read_html_or_unicode_clipboard.s`: clipboard and HTML link preservation hook.
-- `asm/format_output_links.s`: output RichEdit link formatting, hidden URL suffixes, and click fallback.
-- `scripts/patch_qtranslate_links.py`: binary patcher for capture/accessibility link preservation.
-- `scripts/patch_qtranslate_output_links.py`: binary patcher for output RichEdit link rendering.
-- `scripts/build_qtranslate_portable_clean.ps1`: local portable builder.
-- `QTranslate.6.9.0/Services/Common.js`: shared service helpers.
-- `QTranslate.6.9.0/Services/Multi/Service.js`: active Multi/FreeTranslations service path hardening.
+- `asm/`
+  Binary patch payloads for clipboard capture and popup output behavior.
+- `scripts/`
+  Patchers, probes, tracing helpers, smoke tests, and portable build scripts.
+- `native/`
+  Small native helpers used during accessibility and UIA experiments.
+- `notes/`
+  Investigation notes and findings from the reverse-engineering and validation work.
+- `QTranslate.6.9.0/Services/`
+  Unpacked service sources used for the JavaScript-side fixes.
 
-## Build notes
+## Key files
 
-This workspace expects an unpacked local QTranslate 6.9.0 tree at `QTranslate.6.9.0`. The Git repository does not store QTranslate binaries or generated portable packages.
+- `asm/read_html_or_unicode_clipboard.s`
+  Preserves HTML/clipboard links in the capture path.
+- `asm/format_output_links.s`
+  Formats popup RichEdit output, keeps hidden URL backing text, and handles click/hover fallback logic.
+- `scripts/patch_qtranslate_links.py`
+  Applies the capture/accessibility-side binary patch.
+- `scripts/patch_qtranslate_output_links.py`
+  Applies the popup output RichEdit patch.
+- `scripts/build_qtranslate_portable_clean.ps1`
+  Builds a fresh portable package from the patched local tree.
+- `QTranslate.6.9.0/Services/Common.js`
+  Shared service helpers.
+- `QTranslate.6.9.0/Services/Multi/Service.js`
+  The active Multi/FreeTranslations runtime path that needed URL/token hardening.
 
-Typical local flow:
+## Quick start
+
+Prerequisite: an unpacked local QTranslate 6.9.0 tree at `QTranslate.6.9.0`.
 
 ```powershell
 python .\scripts\patch_qtranslate_links.py --with-accessibility-main
@@ -34,15 +52,24 @@ python .\scripts\patch_qtranslate_output_links.py
 powershell -ExecutionPolicy Bypass -File .\scripts\build_qtranslate_portable_clean.ps1
 ```
 
-The clean portable builder removes packed service archives from the output and sets the default portable profile to German UI with automatic source detection to German translation.
+The clean portable builder:
 
-## Release handling
+- removes packed service archives from the portable output
+- keeps services unpacked under `Services`
+- prepares the German portable profile with auto-detect source to German translation
 
-Do not commit generated packages to Git. Put final portable archives on GitHub Releases instead.
+## Build and release
 
-Local release artifacts may exist under:
+- Short local build guide: [Docs/BUILD.md](Docs/BUILD.md)
+- Current release notes: [RELEASE_NOTES.md](RELEASE_NOTES.md)
+- Portable packages should be published as GitHub Release assets, not committed into the repo
+
+Ignored local output directories:
 
 - `Ausgabe/`
 - `release/`
 
-Both directories are ignored by Git.
+## Notes
+
+- OCR text recognition depends on the external OCR.space service. Without a personal OCR API key, OCR requests can be rate-limited by that external service.
+- The repository intentionally excludes original QTranslate binaries and generated archives.
