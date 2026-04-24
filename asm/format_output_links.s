@@ -490,7 +490,7 @@ output_link_richedit_proc:
   cmp dword ptr [ebp + 12], WM_LBUTTONUP
   je .Lproc_mouse_up
   cmp dword ptr [ebp + 12], WM_SETCURSOR
-  je .Lproc_call_old_light
+  je .Lproc_setcursor
   jmp .Lproc_call_old_light
 
 .Lproc_call_old_light:
