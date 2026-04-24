@@ -611,47 +611,64 @@ output_link_richedit_proc:
   cmp eax, [ebp - 16]
   jge .Lproc_call_old
   mov edx, [ebp - 20]
-  mov cx, word ptr [edx + eax * 2]
-  or cx, 0x20
-  cmp cx, 0x72
+  cmp word ptr [edx + eax * 2], 0x28
   jne .Lcursor_next
-  mov cx, word ptr [edx + eax * 2 + 2]
-  or cx, 0x20
-  cmp cx, 0x65
-  jne .Lcursor_next
-  mov cx, word ptr [edx + eax * 2 + 4]
-  or cx, 0x20
-  cmp cx, 0x61
-  jne .Lcursor_next
-  mov cx, word ptr [edx + eax * 2 + 6]
-  or cx, 0x20
-  cmp cx, 0x64
-  jne .Lcursor_next
-
-  mov [ebp - 24], eax           # READ text index
-  lea ecx, [eax + 4]
-  mov [ebp - 28], ecx           # READ end text index
-  mov edi, ecx
-.Lcursor_space_loop:
-  cmp edi, [ebp - 16]
-  jge .Lcursor_next
+  mov ecx, eax
+  dec ecx
+.Lcursor_back_space:
+  cmp ecx, 0
+  jl .Lcursor_next
+  mov dx, word ptr [edx + ecx * 2]
+  cmp dx, 0x20
+  je .Lcursor_back_space_dec
+  cmp dx, 0x09
+  je .Lcursor_back_space_dec
+  jmp .Lcursor_have_anchor_end
+.Lcursor_back_space_dec:
+  dec ecx
   mov edx, [ebp - 20]
-  mov cx, word ptr [edx + edi * 2]
-  cmp cx, 0x20
-  je .Lcursor_space_advance
-  cmp cx, 0x09
-  je .Lcursor_space_advance
-  jmp .Lcursor_require_open
-.Lcursor_space_advance:
-  inc edi
-  jmp .Lcursor_space_loop
-
-.Lcursor_require_open:
-  cmp edi, [ebp - 16]
-  jge .Lcursor_next
+  jmp .Lcursor_back_space
+.Lcursor_have_anchor_end:
+  mov esi, ecx
+  inc esi
+  mov [ebp - 28], esi           # anchor end text index
+.Lcursor_back_word:
+  cmp ecx, 0
+  jl .Lcursor_start_zero
   mov edx, [ebp - 20]
-  cmp word ptr [edx + edi * 2], 0x28
-  jne .Lcursor_next
+  mov dx, word ptr [edx + ecx * 2]
+  cmp dx, 0x20
+  jle .Lcursor_start_after_delim
+  cmp dx, 0x28
+  je .Lcursor_start_after_delim
+  cmp dx, 0x29
+  je .Lcursor_start_after_delim
+  cmp dx, 0x5b
+  je .Lcursor_start_after_delim
+  cmp dx, 0x5d
+  je .Lcursor_start_after_delim
+  cmp dx, 0x2c
+  je .Lcursor_start_after_delim
+  cmp dx, 0x3b
+  je .Lcursor_start_after_delim
+  cmp dx, 0x3a
+  je .Lcursor_start_after_delim
+  cmp dx, 0x21
+  je .Lcursor_start_after_delim
+  cmp dx, 0x3f
+  je .Lcursor_start_after_delim
+  dec ecx
+  jmp .Lcursor_back_word
+.Lcursor_start_zero:
+  xor esi, esi
+  jmp .Lcursor_store_anchor
+.Lcursor_start_after_delim:
+  lea esi, [ecx + 1]
+.Lcursor_store_anchor:
+  cmp esi, [ebp - 28]
+  jge .Lcursor_next
+  mov [ebp - 24], esi           # anchor start text index
+  mov edi, eax
   inc edi
   lea ecx, [edi + 4]
   cmp ecx, [ebp - 16]
@@ -840,47 +857,64 @@ output_link_mouseup_gettext_done:
   cmp eax, [ebp - 16]
   jge .Lproc_call_old
   mov edx, [ebp - 20]
-  mov cx, word ptr [edx + eax * 2]
-  or cx, 0x20
-  cmp cx, 0x72                  # r
+  cmp word ptr [edx + eax * 2], 0x28    # '('
   jne .Lproc_next
-  mov cx, word ptr [edx + eax * 2 + 2]
-  or cx, 0x20
-  cmp cx, 0x65                  # e
-  jne .Lproc_next
-  mov cx, word ptr [edx + eax * 2 + 4]
-  or cx, 0x20
-  cmp cx, 0x61                  # a
-  jne .Lproc_next
-  mov cx, word ptr [edx + eax * 2 + 6]
-  or cx, 0x20
-  cmp cx, 0x64                  # d
-  jne .Lproc_next
-
-  mov [ebp - 24], eax           # linkStart text index
-  lea ecx, [eax + 4]
-  mov [ebp - 28], ecx           # linkEnd text index
-  mov edi, ecx
-.Lproc_space_loop:
-  cmp edi, [ebp - 16]
-  jge .Lproc_next
+  mov ecx, eax
+  dec ecx
+.Lproc_back_space:
+  cmp ecx, 0
+  jl .Lproc_next
+  mov dx, word ptr [edx + ecx * 2]
+  cmp dx, 0x20
+  je .Lproc_back_space_dec
+  cmp dx, 0x09
+  je .Lproc_back_space_dec
+  jmp .Lproc_have_anchor_end
+.Lproc_back_space_dec:
+  dec ecx
   mov edx, [ebp - 20]
-  mov cx, word ptr [edx + edi * 2]
-  cmp cx, 0x20
-  je .Lproc_space_advance
-  cmp cx, 0x09
-  je .Lproc_space_advance
-  jmp .Lproc_require_open
-.Lproc_space_advance:
-  inc edi
-  jmp .Lproc_space_loop
-
-.Lproc_require_open:
-  cmp edi, [ebp - 16]
-  jge .Lproc_next
+  jmp .Lproc_back_space
+.Lproc_have_anchor_end:
+  mov esi, ecx
+  inc esi
+  mov [ebp - 28], esi           # linkEnd text index
+.Lproc_back_word:
+  cmp ecx, 0
+  jl .Lproc_start_zero
   mov edx, [ebp - 20]
-  cmp word ptr [edx + edi * 2], 0x28    # '('
-  jne .Lproc_next
+  mov dx, word ptr [edx + ecx * 2]
+  cmp dx, 0x20
+  jle .Lproc_start_after_delim
+  cmp dx, 0x28
+  je .Lproc_start_after_delim
+  cmp dx, 0x29
+  je .Lproc_start_after_delim
+  cmp dx, 0x5b
+  je .Lproc_start_after_delim
+  cmp dx, 0x5d
+  je .Lproc_start_after_delim
+  cmp dx, 0x2c
+  je .Lproc_start_after_delim
+  cmp dx, 0x3b
+  je .Lproc_start_after_delim
+  cmp dx, 0x3a
+  je .Lproc_start_after_delim
+  cmp dx, 0x21
+  je .Lproc_start_after_delim
+  cmp dx, 0x3f
+  je .Lproc_start_after_delim
+  dec ecx
+  jmp .Lproc_back_word
+.Lproc_start_zero:
+  xor esi, esi
+  jmp .Lproc_store_anchor
+.Lproc_start_after_delim:
+  lea esi, [ecx + 1]
+.Lproc_store_anchor:
+  cmp esi, [ebp - 28]
+  jge .Lproc_next
+  mov [ebp - 24], esi           # linkStart text index
+  mov edi, eax
   inc edi
   mov [ebp - 36], edi           # URL text index
   lea ecx, [edi + 4]
