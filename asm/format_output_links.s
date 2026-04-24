@@ -319,10 +319,10 @@ output_link_anchor_visual_start:
 .Lgeneric_back_space:
   cmp ecx, 0
   jl .Lnext
-  mov dx, word ptr [edx + ecx * 2]
-  cmp dx, 0x20
+  mov cx, word ptr [edx + ecx * 2]
+  cmp cx, 0x20
   je .Lgeneric_back_space_dec
-  cmp dx, 0x09
+  cmp cx, 0x09
   je .Lgeneric_back_space_dec
   jmp .Lgeneric_have_anchor_end
 .Lgeneric_back_space_dec:
@@ -339,30 +339,30 @@ output_link_anchor_visual_start:
   cmp ecx, 0
   jl .Lgeneric_start_zero
   mov edx, [ebp - 132]
-  mov dx, word ptr [edx + ecx * 2]
-  cmp dx, 0x20
+  mov cx, word ptr [edx + ecx * 2]
+  cmp cx, 0x20
   jle .Lgeneric_start_after_delim
-  cmp dx, 0x28                  # (
+  cmp cx, 0x28                  # (
   je .Lgeneric_start_after_delim
-  cmp dx, 0x29                  # )
+  cmp cx, 0x29                  # )
   je .Lgeneric_start_after_delim
-  cmp dx, 0x5b                  # [
+  cmp cx, 0x5b                  # [
   je .Lgeneric_start_after_delim
-  cmp dx, 0x5d                  # ]
+  cmp cx, 0x5d                  # ]
   je .Lgeneric_start_after_delim
-  cmp dx, 0x7b                  # {
+  cmp cx, 0x7b                  # {
   je .Lgeneric_start_after_delim
-  cmp dx, 0x7d                  # }
+  cmp cx, 0x7d                  # }
   je .Lgeneric_start_after_delim
-  cmp dx, 0x2c                  # ,
+  cmp cx, 0x2c                  # ,
   je .Lgeneric_start_after_delim
-  cmp dx, 0x3b                  # ;
+  cmp cx, 0x3b                  # ;
   je .Lgeneric_start_after_delim
-  cmp dx, 0x3a                  # :
+  cmp cx, 0x3a                  # :
   je .Lgeneric_start_after_delim
-  cmp dx, 0x21                  # !
+  cmp cx, 0x21                  # !
   je .Lgeneric_start_after_delim
-  cmp dx, 0x3f                  # ?
+  cmp cx, 0x3f                  # ?
   je .Lgeneric_start_after_delim
   dec ecx
   jmp .Lgeneric_back_word
@@ -618,10 +618,10 @@ output_link_richedit_proc:
 .Lcursor_back_space:
   cmp ecx, 0
   jl .Lcursor_next
-  mov dx, word ptr [edx + ecx * 2]
-  cmp dx, 0x20
+  mov cx, word ptr [edx + ecx * 2]
+  cmp cx, 0x20
   je .Lcursor_back_space_dec
-  cmp dx, 0x09
+  cmp cx, 0x09
   je .Lcursor_back_space_dec
   jmp .Lcursor_have_anchor_end
 .Lcursor_back_space_dec:
@@ -636,26 +636,26 @@ output_link_richedit_proc:
   cmp ecx, 0
   jl .Lcursor_start_zero
   mov edx, [ebp - 20]
-  mov dx, word ptr [edx + ecx * 2]
-  cmp dx, 0x20
+  mov cx, word ptr [edx + ecx * 2]
+  cmp cx, 0x20
   jle .Lcursor_start_after_delim
-  cmp dx, 0x28
+  cmp cx, 0x28
   je .Lcursor_start_after_delim
-  cmp dx, 0x29
+  cmp cx, 0x29
   je .Lcursor_start_after_delim
-  cmp dx, 0x5b
+  cmp cx, 0x5b
   je .Lcursor_start_after_delim
-  cmp dx, 0x5d
+  cmp cx, 0x5d
   je .Lcursor_start_after_delim
-  cmp dx, 0x2c
+  cmp cx, 0x2c
   je .Lcursor_start_after_delim
-  cmp dx, 0x3b
+  cmp cx, 0x3b
   je .Lcursor_start_after_delim
-  cmp dx, 0x3a
+  cmp cx, 0x3a
   je .Lcursor_start_after_delim
-  cmp dx, 0x21
+  cmp cx, 0x21
   je .Lcursor_start_after_delim
-  cmp dx, 0x3f
+  cmp cx, 0x3f
   je .Lcursor_start_after_delim
   dec ecx
   jmp .Lcursor_back_word
@@ -864,10 +864,10 @@ output_link_mouseup_gettext_done:
 .Lproc_back_space:
   cmp ecx, 0
   jl .Lproc_next
-  mov dx, word ptr [edx + ecx * 2]
-  cmp dx, 0x20
+  mov cx, word ptr [edx + ecx * 2]
+  cmp cx, 0x20
   je .Lproc_back_space_dec
-  cmp dx, 0x09
+  cmp cx, 0x09
   je .Lproc_back_space_dec
   jmp .Lproc_have_anchor_end
 .Lproc_back_space_dec:
@@ -882,26 +882,26 @@ output_link_mouseup_gettext_done:
   cmp ecx, 0
   jl .Lproc_start_zero
   mov edx, [ebp - 20]
-  mov dx, word ptr [edx + ecx * 2]
-  cmp dx, 0x20
+  mov cx, word ptr [edx + ecx * 2]
+  cmp cx, 0x20
   jle .Lproc_start_after_delim
-  cmp dx, 0x28
+  cmp cx, 0x28
   je .Lproc_start_after_delim
-  cmp dx, 0x29
+  cmp cx, 0x29
   je .Lproc_start_after_delim
-  cmp dx, 0x5b
+  cmp cx, 0x5b
   je .Lproc_start_after_delim
-  cmp dx, 0x5d
+  cmp cx, 0x5d
   je .Lproc_start_after_delim
-  cmp dx, 0x2c
+  cmp cx, 0x2c
   je .Lproc_start_after_delim
-  cmp dx, 0x3b
+  cmp cx, 0x3b
   je .Lproc_start_after_delim
-  cmp dx, 0x3a
+  cmp cx, 0x3a
   je .Lproc_start_after_delim
-  cmp dx, 0x21
+  cmp cx, 0x21
   je .Lproc_start_after_delim
-  cmp dx, 0x3f
+  cmp cx, 0x3f
   je .Lproc_start_after_delim
   dec ecx
   jmp .Lproc_back_word
