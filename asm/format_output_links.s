@@ -274,10 +274,11 @@ output_link_wrapper_start:
   call .Ltext_index_to_cp
   mov [ebp - 116], eax          # hiddenEnd cp
 
-  # Link the full backing range so the EN_LINK handler can still recover the
-  # hidden URL. The visible part remains only READ because the suffix is hidden.
+  # Do not leave a native RichEdit link behind here. Native CFE_LINK hover
+  # handling can re-enter QTranslate's old EN_LINK path and crash the popup.
+  # The visible anchor is styled below; clicks are handled by our fallback.
   push dword ptr [ebp - 172]
-  push CFE_LINK
+  push 0
   push CFM_LINK
   push dword ptr [ebp - 116]
   push dword ptr [ebp - 124]
@@ -286,9 +287,8 @@ output_link_wrapper_start:
 
 output_link_anchor_visual_start:
 
-  # Re-assert the visible anchor styling on READ only. In practice the
-  # backing-range CFE_LINK alone is not sufficient to keep the visible anchor
-  # rendered like a hyperlink after the hidden suffix is applied.
+  # Re-assert the visible anchor styling only. This is intentionally visual
+  # styling, not native CFE_LINK, so hover stays in the safe fallback path.
   push dword ptr [ebp - 172]
   push dword ptr [ebp - 120]
   push dword ptr [ebp - 124]
@@ -490,7 +490,7 @@ output_link_richedit_proc:
   cmp dword ptr [ebp + 12], WM_LBUTTONUP
   je .Lproc_mouse_up
   cmp dword ptr [ebp + 12], WM_SETCURSOR
-  je .Lproc_setcursor
+  je .Lproc_call_old_light
   jmp .Lproc_call_old_light
 
 .Lproc_call_old_light:
@@ -618,10 +618,10 @@ output_link_richedit_proc:
 .Lcursor_back_space:
   cmp ecx, 0
   jl .Lcursor_next
-  mov dx, word ptr [edx + ecx * 2]
-  cmp dx, 0x20
+  mov cx, word ptr [edx + ecx * 2]
+  cmp cx, 0x20
   je .Lcursor_back_space_dec
-  cmp dx, 0x09
+  cmp cx, 0x09
   je .Lcursor_back_space_dec
   jmp .Lcursor_have_anchor_end
 .Lcursor_back_space_dec:
@@ -636,26 +636,26 @@ output_link_richedit_proc:
   cmp ecx, 0
   jl .Lcursor_start_zero
   mov edx, [ebp - 20]
-  mov dx, word ptr [edx + ecx * 2]
-  cmp dx, 0x20
+  mov cx, word ptr [edx + ecx * 2]
+  cmp cx, 0x20
   jle .Lcursor_start_after_delim
-  cmp dx, 0x28
+  cmp cx, 0x28
   je .Lcursor_start_after_delim
-  cmp dx, 0x29
+  cmp cx, 0x29
   je .Lcursor_start_after_delim
-  cmp dx, 0x5b
+  cmp cx, 0x5b
   je .Lcursor_start_after_delim
-  cmp dx, 0x5d
+  cmp cx, 0x5d
   je .Lcursor_start_after_delim
-  cmp dx, 0x2c
+  cmp cx, 0x2c
   je .Lcursor_start_after_delim
-  cmp dx, 0x3b
+  cmp cx, 0x3b
   je .Lcursor_start_after_delim
-  cmp dx, 0x3a
+  cmp cx, 0x3a
   je .Lcursor_start_after_delim
-  cmp dx, 0x21
+  cmp cx, 0x21
   je .Lcursor_start_after_delim
-  cmp dx, 0x3f
+  cmp cx, 0x3f
   je .Lcursor_start_after_delim
   dec ecx
   jmp .Lcursor_back_word
@@ -864,10 +864,10 @@ output_link_mouseup_gettext_done:
 .Lproc_back_space:
   cmp ecx, 0
   jl .Lproc_next
-  mov dx, word ptr [edx + ecx * 2]
-  cmp dx, 0x20
+  mov cx, word ptr [edx + ecx * 2]
+  cmp cx, 0x20
   je .Lproc_back_space_dec
-  cmp dx, 0x09
+  cmp cx, 0x09
   je .Lproc_back_space_dec
   jmp .Lproc_have_anchor_end
 .Lproc_back_space_dec:
@@ -882,26 +882,26 @@ output_link_mouseup_gettext_done:
   cmp ecx, 0
   jl .Lproc_start_zero
   mov edx, [ebp - 20]
-  mov dx, word ptr [edx + ecx * 2]
-  cmp dx, 0x20
+  mov cx, word ptr [edx + ecx * 2]
+  cmp cx, 0x20
   jle .Lproc_start_after_delim
-  cmp dx, 0x28
+  cmp cx, 0x28
   je .Lproc_start_after_delim
-  cmp dx, 0x29
+  cmp cx, 0x29
   je .Lproc_start_after_delim
-  cmp dx, 0x5b
+  cmp cx, 0x5b
   je .Lproc_start_after_delim
-  cmp dx, 0x5d
+  cmp cx, 0x5d
   je .Lproc_start_after_delim
-  cmp dx, 0x2c
+  cmp cx, 0x2c
   je .Lproc_start_after_delim
-  cmp dx, 0x3b
+  cmp cx, 0x3b
   je .Lproc_start_after_delim
-  cmp dx, 0x3a
+  cmp cx, 0x3a
   je .Lproc_start_after_delim
-  cmp dx, 0x21
+  cmp cx, 0x21
   je .Lproc_start_after_delim
-  cmp dx, 0x3f
+  cmp cx, 0x3f
   je .Lproc_start_after_delim
   dec ecx
   jmp .Lproc_back_word
@@ -1184,7 +1184,7 @@ output_link_down_valid:
   rep stosd
   mov dword ptr [ebp - 128], CHARFORMAT2W_SIZE
   mov dword ptr [ebp - 124], CFM_LINK | CFM_HIDDEN | CFM_UNDERLINE | CFM_COLOR
-  mov dword ptr [ebp - 120], CFE_LINK | CFE_UNDERLINE
+  mov dword ptr [ebp - 120], CFE_UNDERLINE
   mov dword ptr [ebp - 108], LINK_COLORREF
   lea eax, [ebp - 128]
   push eax
