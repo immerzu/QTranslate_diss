@@ -486,9 +486,9 @@ output_link_richedit_proc:
   mov ebp, esp
 
   cmp dword ptr [ebp + 12], WM_LBUTTONDOWN
-  je .Lproc_mouse_down
+  je .Lproc_call_old_light
   cmp dword ptr [ebp + 12], WM_LBUTTONUP
-  je .Lproc_mouse_up
+  je .Lproc_call_old_light
   cmp dword ptr [ebp + 12], WM_SETCURSOR
   je .Lproc_call_old_light
   jmp .Lproc_call_old_light
