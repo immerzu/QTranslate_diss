@@ -81,8 +81,9 @@
 #   callee pops 8 bytes
 #
 # This wrapper calls the original function, then scans the actual RichEdit text
-# for "READ (http...)" / "READ (www...)" patterns. It applies CFE_LINK exactly
-# to READ and CFE_HIDDEN exactly to the following " (url)" suffix.
+# for "ANCHOR (http...)" / "ANCHOR (www...)" patterns. It applies CFE_LINK
+# exactly to the visible anchor and CFE_HIDDEN exactly to the following
+# " (url)" suffix.
 output_link_wrapper_start:
   push ebp
   mov ebp, esp
@@ -164,7 +165,7 @@ output_link_wrapper_start:
   mov cx, word ptr [edx + eax * 2]
   or cx, 0x20
   cmp cx, 0x72                  # r
-  jne .Lnext
+  jne .Lmaybe_open_url
   mov cx, word ptr [edx + eax * 2 + 2]
   or cx, 0x20
   cmp cx, 0x65                  # e
@@ -266,7 +267,8 @@ output_link_wrapper_start:
   mov eax, [ebp - 140]
   call .Ltext_index_to_cp
   mov [ebp - 124], eax          # linkStart cp
-  lea eax, [eax + 4]
+  mov eax, [ebp - 152]
+  call .Ltext_index_to_cp
   mov [ebp - 120], eax          # linkEnd / hiddenStart cp
   mov eax, [ebp - 144]
   call .Ltext_index_to_cp
@@ -306,6 +308,86 @@ output_link_anchor_visual_start:
   mov eax, [ebp - 140]
   dec eax
   jmp .Lscan
+
+.Lmaybe_open_url:
+  mov edx, [ebp - 132]
+  cmp word ptr [edx + eax * 2], 0x28    # '('
+  jne .Lnext
+
+  mov ecx, eax
+  dec ecx
+.Lgeneric_back_space:
+  cmp ecx, 0
+  jl .Lnext
+  mov dx, word ptr [edx + ecx * 2]
+  cmp dx, 0x20
+  je .Lgeneric_back_space_dec
+  cmp dx, 0x09
+  je .Lgeneric_back_space_dec
+  jmp .Lgeneric_have_anchor_end
+.Lgeneric_back_space_dec:
+  dec ecx
+  mov edx, [ebp - 132]
+  jmp .Lgeneric_back_space
+
+.Lgeneric_have_anchor_end:
+  mov esi, ecx
+  inc esi
+  mov [ebp - 152], esi          # linkEnd / hiddenStart text index
+  mov [ebp - 148], esi
+.Lgeneric_back_word:
+  cmp ecx, 0
+  jl .Lgeneric_start_zero
+  mov edx, [ebp - 132]
+  mov dx, word ptr [edx + ecx * 2]
+  cmp dx, 0x20
+  jle .Lgeneric_start_after_delim
+  cmp dx, 0x28                  # (
+  je .Lgeneric_start_after_delim
+  cmp dx, 0x29                  # )
+  je .Lgeneric_start_after_delim
+  cmp dx, 0x5b                  # [
+  je .Lgeneric_start_after_delim
+  cmp dx, 0x5d                  # ]
+  je .Lgeneric_start_after_delim
+  cmp dx, 0x7b                  # {
+  je .Lgeneric_start_after_delim
+  cmp dx, 0x7d                  # }
+  je .Lgeneric_start_after_delim
+  cmp dx, 0x2c                  # ,
+  je .Lgeneric_start_after_delim
+  cmp dx, 0x3b                  # ;
+  je .Lgeneric_start_after_delim
+  cmp dx, 0x3a                  # :
+  je .Lgeneric_start_after_delim
+  cmp dx, 0x21                  # !
+  je .Lgeneric_start_after_delim
+  cmp dx, 0x3f                  # ?
+  je .Lgeneric_start_after_delim
+  dec ecx
+  jmp .Lgeneric_back_word
+.Lgeneric_start_zero:
+  xor esi, esi
+  jmp .Lgeneric_store_start
+.Lgeneric_start_after_delim:
+  lea esi, [ecx + 1]
+.Lgeneric_store_start:
+  cmp esi, [ebp - 152]
+  jge .Lnext
+  mov [ebp - 140], esi          # linkStart text index
+  mov edi, eax
+  inc edi                       # URL starts after '('
+  lea ecx, [edi + 4]
+  cmp ecx, [ebp - 136]
+  jge .Lnext
+  mov edx, [ebp - 132]
+  mov cx, word ptr [edx + edi * 2]
+  or cx, 0x20
+  cmp cx, 0x68                  # h
+  je .Lcheck_read_http
+  cmp cx, 0x77                  # w
+  je .Lcheck_read_www
+  jmp .Lnext
 
 .Lnext:
   dec eax
